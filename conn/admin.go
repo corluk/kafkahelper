@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"context"
 	"net"
 	"strconv"
 
@@ -19,8 +20,8 @@ func (connAdmin *ConnAdmin) Do(fn func(controller *kafka.Conn) error) error {
 			return err
 		}
 
-		adminConn, err := connAdmin.Conn.Dialer.DialContext("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
-		
+		adminConn, err := connAdmin.Conn.Dialer.DialContext(context.Background(), "tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+
 		if err != nil {
 			return err
 		}
