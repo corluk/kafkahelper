@@ -20,3 +20,10 @@ func GetTopics(conn *kafka.Conn) ([]string, error) {
 	}
 	return list, nil
 }
+
+
+func AssertTopics(topicConfig []kafka.Topic) error {
+
+	
+	// is exists 
+}
