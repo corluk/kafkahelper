@@ -67,7 +67,16 @@ func (kafkaConn *Conn) GetTopics() ([]string, error) {
 	return topics, err
 
 }
+func (kafkaConn *Conn) DeleteTopics(topics ...string) error {
+	if kafkaConn.Dialer == nil {
+		return errors.New("dialer not set up")
 
+	}
+	return kafkaConn.Do(func(conn *kafka.Conn) error {
+
+		return conn.DeleteTopics(topics...)
+	})
+}
 func (kafkaConn *Conn) CreateTopic(topicConfig *kafka.TopicConfig) error {
 
 	if kafkaConn.Dialer == nil {

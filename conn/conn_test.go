@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
+
 	"github.com/stretchr/testify/assert"
 )
 
