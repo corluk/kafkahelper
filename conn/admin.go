@@ -21,7 +21,7 @@ func (connAdmin *ConnAdmin) Do(fn func(controller *kafka.Conn) error) error {
 		}
 
 		adminConn, err := connAdmin.Conn.Dialer.DialContext(context.Background(), "tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
-
+		
 		if err != nil {
 			return err
 		}
