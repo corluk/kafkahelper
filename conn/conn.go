@@ -10,6 +10,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// KafkaMagic
 type ConnMode string
 
 const (
@@ -72,16 +73,15 @@ func (kafkaConn *Conn) WriteJSON(topic string, messages []interface{}) error {
 		Balancer: &kafka.LeastBytes{},
 		Transport: &kafka.Transport{
 			Dial: kafkaConn.Dialer.DialFunc,
+			SASL: kafkaConn.Dialer.SASLMechanism,
 		},
 	}
 
-
-	
 	writer := kafka.NewConnWith(conn, kafka.ConnConfig{
 		Topic: topic,
 	})
 	if err != nil {
-		return  err
+		return err
 	}
 
 	var kafkaMessages []kafka.Message
