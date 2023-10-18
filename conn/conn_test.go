@@ -33,14 +33,14 @@ type Obj struct {
 }
 
 func TestCreateWriteTopic(t *testing.T) {
-	
+
 	dialer := &kafka.Dialer{
 		Timeout:   3 * time.Second,
 		DualStack: true,
 	}
 	conn := Conn{
 		Dialer:  dialer,
-		Brokers: []string{"kafka1.ozmuzik.dev:9092"},
+		Brokers: []string{"localhost:9092"},
 	}
 	err := conn.CreateTopic(&kafka.TopicConfig{
 		Topic:             "test-topic",
