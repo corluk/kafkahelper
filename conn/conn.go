@@ -29,9 +29,11 @@ func (Conn *Conn) Setup() (*kafka.Conn, error) {
 	if len(Conn.Brokers) < 1 {
 		return nil, errors.New("no broker is defined")
 	}
+
 	for _, broker := range Conn.Brokers {
 
 		conn, err := Conn.Dialer.DialContext(context.Background(), "tcp", broker)
+
 		if err == nil {
 			if !Conn.WithController {
 				return conn, err
@@ -61,57 +63,71 @@ func (kafkaConn *Conn) Do(fn func(conn *kafka.Conn) error) error {
 	return fn(conn)
 
 }
-func (kafkaConn *Conn) WriteJSON(topic string, messages []interface{}) (int, error) {
+
+func (kafkaConn *Conn) WriteJSON(topic string, messages []interface{}) error {
 	conn, err := kafkaConn.Setup()
-	if err != nil {
-		return 0, err
+	w := &kafka.Writer{
+		Addr:     kafka.TCP(kafkaConn.Brokers...),
+		Topic:    "test-topic",
+		Balancer: &kafka.LeastBytes{},
+		Transport: &kafka.Transport{
+			Dial: kafkaConn.Dialer.DialFunc,
+		},
 	}
-	defer conn.Close()
+
+
+	
+	writer := kafka.NewConnWith(conn, kafka.ConnConfig{
+		Topic: topic,
+	})
+	if err != nil {
+		return  err
+	}
+
 	var kafkaMessages []kafka.Message
+
 	for _, message := range messages {
 
 		b, err := json.Marshal(message)
 		if err == nil {
 			kafkaMessages = append(kafkaMessages, kafka.Message{
-				Topic: topic,
+
 				Value: b,
 			})
 
 		}
 	}
-	defer conn.Close()
-	return conn.WriteMessages(kafkaMessages...)
+
+	defer writer.Close()
+	return w.WriteMessages(context.Background(), kafkaMessages...)
 
 }
 
-type KafkaReader struct {
-	Topic   string
-	GroupId string
-	Config  kafka.ReaderConfig
-	Reader  *kafka.Reader
+type Reader struct {
+	Conn   *Conn
+	Config *kafka.ReaderConfig
 }
 
-func (kafkaReader *KafkaReader) InitReader(kafkaConn Conn) error {
-	if kafkaConn.Dialer == nil {
-		return errors.New("dialer is not defined")
+func (kafkaReader *Reader) Read(cb func(value interface{}) error) error {
+	if kafkaReader.Conn == nil {
+		return errors.New("no conn")
 	}
-	kafkaReader.Config.Dialer = kafkaConn.Dialer
-	kafkaReader.Config.Brokers = kafkaConn.Brokers
-	kafkaReader.Config.Topic = kafkaReader.Topic
-	kafkaReader.Config.GroupID = kafkaReader.GroupId
-	kafkaReader.Reader = kafka.NewReader(kafkaReader.Config)
-	return nil
-}
-func (kafkaReader *KafkaReader) Read(cb func(value interface{}) error) {
+	if kafkaReader.Config == nil {
+		return errors.New("no config")
+	}
+	kafkaReader.Config.Dialer = kafkaReader.Conn.Dialer
+	kafkaReader.Config.Brokers = kafkaReader.Conn.Brokers
 
+	reader := kafka.NewReader(*kafkaReader.Config)
 	for {
-		msg, err := kafkaReader.Reader.ReadMessage(context.Background())
+		msg, err := reader.ReadMessage(context.Background())
 		if err == nil {
 			var item interface{}
 			json.Unmarshal(msg.Value, &item)
 			cb(item)
 		}
 	}
+
 }
 
 func (kafkaConn *Conn) GetTopics() ([]string, error) {
@@ -177,30 +193,4 @@ func (kafkaConn *Conn) CreateTopic(topicConfig *kafka.TopicConfig) error {
 		return err
 	})
 	return err
-}
-
-func (kafkaConn *Conn) SendMessages(topic string, messages []interface{}) (int, error) {
-	if kafkaConn.Dialer == nil {
-		return nil, errors.New("dialer not set up")
-	}
-	var kafkaMessages []kafka.Message
-	for _, message := range messages {
-
-		b, err := json.Marshal(message)
-		if err == nil {
-			kafkaMessages = append(kafkaMessages, kafka.Message{
-				Topic: topic,
-				Value: b,
-			})
-
-		}
-	}
-	var numOfMessages int
-	kafkaConn.Do(func(conn *kafka.Conn) error {
-
-		numOfMessages, err1 := conn.WriteMessages(kafkaMessages...)
-		return err1
-	})
-
-	return numOfMessages, err
 }
