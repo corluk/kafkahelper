@@ -69,7 +69,7 @@ func (kafkaConn *Conn) DoWithChannel(ch chan (*kafka.Conn)) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+
 	ch <- conn
 	return nil
 }

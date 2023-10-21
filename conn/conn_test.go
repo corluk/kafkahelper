@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -55,6 +56,30 @@ func TestCreateWriteTopic(t *testing.T) {
 		Conn: &conn,
 	}
 	err = writer.WriteJSON("test-topic", []interface{}{obj})
+	assert.Nil(t, err)
+
+}
+
+func TestListTopicWithChanbbek(t *testing.T) {
+
+	dialer := &kafka.Dialer{
+		Timeout:   3 * time.Second,
+		DualStack: true,
+	}
+	conn := Conn{
+		Dialer:  dialer,
+		Brokers: []string{"localhost:9092"},
+	}
+
+	ch := make(chan (*kafka.Conn))
+	go conn.DoWithChannel(ch)
+	wg := sync.WaitGroup{} 
+	wg.Add(1)
+	
+	c := <-ch
+	defer c.Close()
+	_, err := c.ReadPartitions()
+	wg.Done()
 	assert.Nil(t, err)
 
 }
