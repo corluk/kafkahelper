@@ -47,11 +47,14 @@ func TestCreateWriteTopic(t *testing.T) {
 		NumPartitions:     1,
 		ReplicationFactor: 1,
 	})
+
 	assert.Nil(t, err)
 	var obj Obj
 	obj.Value = "1"
-
-	err = conn.WriteJSON("test-topic", []interface{}{obj})
+	writer := Writer{
+		Conn: &conn,
+	}
+	err = writer.WriteJSON("test-topic", []interface{}{obj})
 	assert.Nil(t, err)
 
 }

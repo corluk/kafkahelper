@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 
 	"github.com/corluk/kafkahelper/conn"
 	"github.com/segmentio/kafka-go"
 )
 
-func main() {
-
+func Read() chan ([]byte) {
 	dialer := kafka.Dialer{}
 	brokers := []string{"localhost:9092"}
 
@@ -23,9 +24,23 @@ func main() {
 			Topic: "test-topic",
 		},
 	}
+	ch := make(chan ([]byte))
+	go kafkaReader.ReadWithChannel(ch)
+	return ch
+}
+func main() {
 
-	kafkaReader.Read(func(value interface{}) error {
-		fmt.Printf("value is  %s\n", value)
-		return nil
-	})
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	readChan := Read()
+	for {
+		select {
+		case value := <-readChan:
+
+			fmt.Printf("value %s", value)
+		case <-c:
+			fmt.Println("closing with ")
+			os.Exit(0)
+		}
+	}
 }
