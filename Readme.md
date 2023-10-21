@@ -1,13 +1,4 @@
-package main
-
-import (
-	"fmt"
-	"os"
-	"os/signal"
-
-	"github.com/corluk/kafkahelper/conn"
-	"github.com/segmentio/kafka-go"
-)
+Simple Kafka Helper Package 
 
 func Read() chan ([]byte) {
 	dialer := kafka.Dialer{}
