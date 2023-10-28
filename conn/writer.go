@@ -11,7 +11,7 @@ type Writer struct {
 	Conn *Conn
 }
 
-func (writer *Writer) WriteJSON(topic string, messages []interface{}) error {
+func (writer *Writer) WriteJSON(topic string, messages []any) error {
 
 	_, err := writer.Conn.Setup()
 	if err != nil {
@@ -26,7 +26,7 @@ func (writer *Writer) WriteJSON(topic string, messages []interface{}) error {
 			SASL: writer.Conn.Dialer.SASLMechanism,
 		},
 	}
-	
+
 	var kafkaMessages []kafka.Message
 
 	for _, message := range messages {
