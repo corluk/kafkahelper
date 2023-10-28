@@ -11,6 +11,7 @@ type Writer struct {
 	Conn *Conn
 }
 
+// changed to arguments as dots
 func (writer *Writer) WriteJSON(topic string, messages ...any) error {
 
 	_, err := writer.Conn.Setup()
