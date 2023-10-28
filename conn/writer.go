@@ -11,7 +11,7 @@ type Writer struct {
 	Conn *Conn
 }
 
-func (writer *Writer) WriteJSON(topic string, messages []any) error {
+func (writer *Writer) WriteJSON(topic string, messages ...any) error {
 
 	_, err := writer.Conn.Setup()
 	if err != nil {
