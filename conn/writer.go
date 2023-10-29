@@ -11,7 +11,7 @@ type Writer struct {
 }
 
 // changed to arguments as dots
-func (writer *Writer) WriteJSON(topic string, message kafka.Message) error {
+func (writer *Writer) WriteJSON(topic string, message *kafka.Message) error {
 
 	_, err := writer.Conn.Setup()
 	if err != nil {
@@ -43,6 +43,6 @@ func (writer *Writer) WriteJSON(topic string, message kafka.Message) error {
 	*/
 	defer w.Close()
 
-	return w.WriteMessages(context.Background(), message)
+	return w.WriteMessages(context.Background(), *message)
 
 }

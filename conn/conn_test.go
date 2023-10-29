@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"encoding/json"
 	"sync"
 	"testing"
 	"time"
@@ -55,7 +56,12 @@ func TestCreateWriteTopic(t *testing.T) {
 	writer := Writer{
 		Conn: &conn,
 	}
-	err = writer.WriteJSON("test-topic", []interface{}{obj})
+	b, err := json.Marshal(obj)
+	assert.Nil(t, err)
+	err = writer.WriteJSON("test-topic", kafka.Message{
+
+		Value: b,
+	})
 	assert.Nil(t, err)
 
 }
@@ -73,9 +79,9 @@ func TestListTopicWithChanbbek(t *testing.T) {
 
 	ch := make(chan (*kafka.Conn))
 	go conn.DoWithChannel(ch)
-	wg := sync.WaitGroup{} 
+	wg := sync.WaitGroup{}
 	wg.Add(1)
-	
+
 	c := <-ch
 	defer c.Close()
 	_, err := c.ReadPartitions()
