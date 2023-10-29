@@ -58,7 +58,7 @@ func TestCreateWriteTopic(t *testing.T) {
 	}
 	b, err := json.Marshal(obj)
 	assert.Nil(t, err)
-	err = writer.WriteJSON("test-topic", kafka.Message{
+	err = writer.WriteJSON("test-topic", &kafka.Message{
 
 		Value: b,
 	})
