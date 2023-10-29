@@ -35,7 +35,7 @@ func (writer *Writer) WriteJSON(topic string, message *kafka.Message) error {
 	if err != nil {
 		return err
 	}
-
+	// closes connection
 	defer w.Close()
 
 	return w.WriteMessages(context.Background(), *message)
