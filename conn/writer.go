@@ -29,7 +29,7 @@ func (writer *Writer) GetWriter(topic string) (*kafka.Writer, error) {
 }
 
 // changed to arguments as dots
-func (writer *Writer) WriteJSON(topic string, message *kafka.Message) error {
+func (writer *Writer) WriteJSON(topic string, message []kafka.Message) error {
 
 	w, err := writer.GetWriter(topic)
 	if err != nil {
@@ -37,7 +37,6 @@ func (writer *Writer) WriteJSON(topic string, message *kafka.Message) error {
 	}
 	// closes connection
 	defer w.Close()
-
-	return w.WriteMessages(context.Background(), *message)
-
+	
+	return w.WriteMessages(context.Background(), message...)
 }
